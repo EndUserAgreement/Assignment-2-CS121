@@ -1,5 +1,4 @@
 import re
-import requests
 from urllib.parse import urljoin, urlparse
 import urllib.robotparser
 #from urllib.robotparser import RobotFileParser
@@ -96,10 +95,10 @@ def is_valid(url):
 
         # found trap explanations and regex expressions here: https://support.archive-it.org/hc/en-us/articles/208332943-Identify-and-avoid-crawler-traps-
         traps = not re.match(r"^.*/[^/]{300,}$" # should remove long invalid URLs
-                + r"^.*calendar.*$",# removes calendars
-                + r"^.*?(/.+?/).*?\1.*$|^.*?/(.+?/)\2.*$", #repeating directories
-                + r"^.*?(/.+?/).*?\1.*$|^.*?/(.+?/)\2.*$", #long url directories
-                + r"^.*(/misc|/sites|/all|/themes|/modules|/profiles|/css|/field|/node|/theme){3}.*$", #extra directories
+                + r"^.*calendar.*$"# removes calendars
+                + r"^.*?(/.+?/).*?\1.*$|^.*?/(.+?/)\2.*$" #repeating directories
+                + r"^.*?(/.+?/).*?\1.*$|^.*?/(.+?/)\2.*$" #long url directories
+                + r"^.*(/misc|/sites|/all|/themes|/modules|/profiles|/css|/field|/node|/theme){3}.*$" #extra directories
                 + r".*\/20\d\d-\d\d*", parsed.path.lower())  # removes monthly archives
 
         # url is valid (set to True) if it doesn't have any of below file extensions in the path 
@@ -145,13 +144,11 @@ def checkrobot(url, parsed):
     """
     try:
         urlrobot = "http://" + parsed.netloc + "/robots.txt"
-        site = requests.get(urlrobot)
-        if site.status.code != 200:
-            return False
         robotparser = urllib.robotparser.RobotFileParser()
         robotparser.set_url(urlrobot)
         robotparser.read()
-        return robotparser.can_fetch("*", url)
+        if not robotparser.can_fetch("*", url):
+            return False
     except:
         # if there are no robots.txt for the website, return false
-        return False
+        pass
