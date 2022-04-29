@@ -17,9 +17,8 @@ from utils.response import Response
 # COMPLETE: transform relative path URLS to absolute path URLS
 
 
+# IN PROGRESS: detect and avoid infinite traps - lecture 7
 
-
-# TODO: detect and avoid infinite traps - lecture 7
 # TODO: add more file extensions to is_valid function
 # TODO: Detect and avoid crawling very large files, especially if they have low information value - lecture 12
 # TODO: make comments throughout utils.py, frontier.py and scraper.py
@@ -90,11 +89,16 @@ def is_valid(url):
         if not checkrobot(url, parsed):
             return False
 
+        # two parts, one is to check if # is in the url, if it is its likely a trap, next is
+        # check if the url length is long, if it is its likely a trap
+        if '#' in parsed.geturl() or len(str(parsed.geturl()))> 200:
+            return False
 
-        # found regex expressions here: https://support.archive-it.org/hc/en-us/articles/208332943-Identify-and-avoid-crawler-traps-
+        # found trap explanations and regex expressions here: https://support.archive-it.org/hc/en-us/articles/208332943-Identify-and-avoid-crawler-traps-
         traps = not re.match(r"^.*/[^/]{300,}$" # should remove long invalid URLs
                 + r"^.*calendar.*$",# removes calendars
                 + r"^.*?(/.+?/).*?\1.*$|^.*?/(.+?/)\2.*$", #repeating directories
+                + r"^.*?(/.+?/).*?\1.*$|^.*?/(.+?/)\2.*$", #long url directories
                 + r"^.*(/misc|/sites|/all|/themes|/modules|/profiles|/css|/field|/node|/theme){3}.*$", #extra directories
                 + r".*\/20\d\d-\d\d*", parsed.path.lower())  # removes monthly archives
 
